@@ -18,7 +18,7 @@ const Shop = () => {
     addToDb(product.key, count);
   }
   return (
-    <div className="shop-container">
+    <div className="twin-container">
       <div className="product-container">
         {
           products.map(pd => <Product 
