@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fakeData } from '../../fakeData/products';
 import { deleteFromDb, getStoredCart } from '../../utilities/fakedb';
 import ReviewItem from '../ReviewItem/ReviewItem';
+import Cart from '../Cart/Cart';
 
 const Review = () => {
 
@@ -42,7 +43,7 @@ const Review = () => {
 
 
       <div className="cart-container">
-          
+          <Cart cart={cart}></Cart>
       </div>
       
 
