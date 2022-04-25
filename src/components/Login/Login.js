@@ -2,10 +2,13 @@ import React from 'react';
 import { useContext, useState } from "react";
 import { userContext } from "../../App";
 import { useLocation, useNavigate } from "react-router-dom";
-import { initializeLoginFramework } from './loginManager';
+import { creatUserWithEmailAndPassword, handleFbSignIn, handleGoogleSignIn, handleSignOut, initializeLoginFramework, sigInWithEmailAndPassword } from './loginManager';
+import { getAuth } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import firebaseConfig from './firebase.config';
 
 
-export const auth = getAuth(app);
+export const auth = getAuth(initializeApp(firebaseConfig));
 
 function Login() {
   const [newUser, setNewUser] = useState(false);
@@ -19,11 +22,46 @@ function Login() {
   });
 
   initializeLoginFramework();
-  
+
   const [loggedInUser, setLoggedInUser] = useContext(userContext);
   const navigate = useNavigate();
   const location = useLocation();
   let {from} = location.state || {from: {pathname: "/"} };
+
+  const googleSignIn = () => {
+    handleGoogleSignIn()
+    .then(res => {
+        handleResponse(res, true);
+    })
+  }
+
+
+  const fbSignIn = () => {
+   handleFbSignIn()
+   .then(res => {
+      handleResponse(res, true);
+    }) 
+  }
+
+
+  const signOut = () => {
+    handleSignOut()
+    .then(res => {
+        handleResponse(res, false);
+    })
+  }
+
+
+  const handleResponse = (res, redirect) => {
+    setUser(res);
+    setLoggedInUser(res);
+    if (redirect) {
+      navigate(from);
+    }
+  }
+
+
+  
 
  
   const handleBlur = (e) => {
@@ -44,13 +82,21 @@ function Login() {
   };
 
   const handleSubmit = (e) => {
-    // console.log(user.email, user.password);
+
     if (newUser && user.email && user.password) {
-      
+      creatUserWithEmailAndPassword(user.name, user.email, user.password)
+      .then(res => {
+         handleResponse(res, true);
+      })
     }
 
+
+
     if (!newUser && user.email && user.password) {
-      
+      sigInWithEmailAndPassword(user.email, user.password)
+      .then(res => {
+        handleResponse(res, true);
+      })
     }
 
     e.preventDefault();
@@ -60,9 +106,9 @@ function Login() {
 
   return (
     <div style={{textAlign: 'center'}}>
-      {user.isSignedIn ? (<button onClick={handleSignOut}>Sign Out</button>) : (<button onClick={handleGoogleSignIn}>Sign In</button>)}
+      {user.isSignedIn ? (<button onClick={signOut}>Sign Out</button>) : (<button onClick={googleSignIn}>Sign In</button>)}
       <br />
-      <button onClick={handleFbSignIn}>Sign IN using Facebook</button>
+      <button onClick={fbSignIn}>Sign IN using Facebook</button>
 
       {user.isSignedIn && (
         <div>

@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
 import firebaseConfig from "./firebase.config";
 import {
   createUserWithEmailAndPassword,
@@ -12,13 +12,15 @@ import {
 } from "firebase/auth";
 
 export const initializeLoginFramework = () => {
-  initializeApp(firebaseConfig);
-}
+  if (getApps().length === 0) {
+    initializeApp(firebaseConfig);
+  }
+};
 
 export const handleGoogleSignIn = () => {
   const googleProvider = new GoogleAuthProvider();
   const auth = getAuth();
-  signInWithPopup(auth, googleProvider)
+  return signInWithPopup(auth, googleProvider)
     .then((res) => {
       const { displayName, photoURL, email } = res.user;
       const signedInUser = {
@@ -26,9 +28,9 @@ export const handleGoogleSignIn = () => {
         name: displayName,
         email: email,
         photo: photoURL,
+        success: true
       };
-      setUser(signedInUser);
-      console.log(displayName, email, photoURL);
+      return signedInUser;
     })
     .catch((err) => {
       console.log(err);
@@ -40,13 +42,13 @@ export const handleGoogleSignIn = () => {
 export const handleFbSignIn = () => {
   const fbProvider = new FacebookAuthProvider();
   const auth = getAuth();
-signInWithPopup(auth, fbProvider)
+ return signInWithPopup(auth, fbProvider)
 .then((result) => {
   // The signed-in user info.
   const user = result.user;
-  console.log('fb user after sign in ', user);
+  user.success = true;
+  return user; 
 
-  // This gives you a Facebook Access Token. You can use it to access the Facebook API.
   const credential = FacebookAuthProvider.credentialFromResult(result);
   const accessToken = credential.accessToken;
 
@@ -64,11 +66,11 @@ signInWithPopup(auth, fbProvider)
   // ...
 });
 
-}
+};
 
-const handleSignOut = () => {
+export const handleSignOut = () => {
   const auth = getAuth();
-  signOut(auth)
+  return signOut(auth)
     .then((res) => {
       const signedOutUser = {
         isSignedIn: false,
@@ -78,48 +80,44 @@ const handleSignOut = () => {
         error: "",
         success: false,
       };
-      setUser(signedOutUser);
-      console.log(res);
+      return signedOutUser;
     })
     .catch((err) => {});
 };
 
-export const createUserWithEmailAndPassword = () => {
+export const creatUserWithEmailAndPassword = (name, email, password) => {
       const auth = getAuth();
-      createUserWithEmailAndPassword(auth, user.email, user.password)
+       return createUserWithEmailAndPassword(auth, email, password)
         .then((res) => {
-          const newUserInfo = { ...user };
+          const newUserInfo = res.user ;
           newUserInfo.error = "";
           newUserInfo.success = true;
-          setUser(newUserInfo);
-          updateUserName(user.name);
+          updateUserName(name);
+          return newUserInfo;
         })
         .catch((error) => {
-          const newUserInfo = { ...user };
+          const newUserInfo = {};
           newUserInfo.error = error.message;
           newUserInfo.success = false;
-          setUser(newUserInfo);
+          return newUserInfo;
         });
 }
 
 
-export const signInWithEmailAndPassword = () => {
+export const sigInWithEmailAndPassword = (email, password) => {
   const auth = getAuth();
-      signInWithEmailAndPassword(auth, user.email, user.password)
+      return signInWithEmailAndPassword(auth, email, password)
         .then((res) => {
-          const newUserInfo = { ...user };
+          const newUserInfo = res.user;
           newUserInfo.error = "";
           newUserInfo.success = true;
-          setUser(newUserInfo);
-          setLoggedInUser(newUserInfo);
-          navigate(from);
-          console.log("sign in user info", res.user);
+          return newUserInfo;
         })
         .catch((error) => {
-          const newUserInfo = { ...user };
+          const newUserInfo = {};
           newUserInfo.error = error.message;
           newUserInfo.success = false;
-          setUser(newUserInfo);
+          return newUserInfo;
         });
 }
 
